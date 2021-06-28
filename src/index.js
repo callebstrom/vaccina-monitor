@@ -35,24 +35,31 @@ const locations = [
 const BASE_URL =
   "https://apibk.cliento.com/api/v2/partner/cliento/6YoV801j3oiq2bf5pSb92o";
 
-const toResult = ({ name, response: { nextAvailable } }) => {
+const toResult = ({
+  name,
+  response: {
+    resourceSlots: [resource],
+  },
+}) => {
   return {
     name,
-    nextAvailable,
+    slots: resource ? resource.slots : [],
   };
 };
 
 const done$ = new Subject();
 
-const notify = ({ name, nextAvailable }) => {
-  if (nextAvailable) {
-    const message = `${name} has new available time at ${nextAvailable}`;
+const notify = ({ name, slots }) => {
+  if (slots.length > 0) {
+    const slot = slots[0];
+    const message = `${name} has new available time at ${slot.date} ${slot.time}`;
     load.succeed([message]);
     notifier.notify(
       {
         title: message,
         message,
-        open: "https://www.vaccina.se/covidvaccin/sormland/tidsbokning/#/calendar",
+        open:
+          "https://www.vaccina.se/covidvaccin/sormland/tidsbokning/#/calendar",
       },
       function (err) {
         if (err) console.error("Could not display notification", err);
